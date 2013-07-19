@@ -22,9 +22,14 @@
 			width: 100%;
 			height: 100%;
 			text-align: center;
-			background: #222 url(./imagedoc-darknoise.png) 0 0 repeat;
+			/*background: #222 url(./img/imagedoc-darknoise.png) 0 0 repeat;*/
+			background: #000;
 			-webkit-background-size: 44px 44px;
 			background-size: 44px 44px;
+			font-family: "Lucida Grande", "Helvetica Neue", "Sans Serif";
+		}
+		#pic{
+			display: none;
 		}
 		.preview{
 			display: table;
@@ -42,33 +47,177 @@
 			max-width: 100%;
 			max-height: 100%;
 		}
+		.progress{
+			display: none;
+			position: relative;
+			margin: 0 15px;
+			height: 20px;
+			overflow: hidden;
+			background-color: #f7f7f7;
+			background-image: -webkit-gradient(linear,0 0,0 100%,from(#f5f5f5),to(#f9f9f9));
+			background-image: -webkit-linear-gradient(top,#f5f5f5,#f9f9f9);
+			background-image: linear-gradient(to bottom,#f5f5f5,#f9f9f9);
+			background-repeat: repeat-x;
+			-webkit-border-radius: 4px;
+			border-radius: 4px;
+			-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+			box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+		}
+		@-webkit-keyframes progress-bar-stripes{
+			from{
+				background-position:40px 0;
+			}
+			to{
+				background-position:0 0;
+			}
+		}
+
+		@keyframes progress-bar-stripes{
+			from{
+				background-position:40px 0;
+			}
+			to{
+				background-position:0 0;
+			}
+		}
+
+		.progress .bar{
+			color: #333;
+			float: left;
+			font-size: 12px;
+			height: 100%;
+			line-height: 22px;
+			text-align:left;
+			text-indent: 10px;
+			text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+			background-repeat: repeat-x;
+			-webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,0.15);
+			-webkit-animation: progress-bar-stripes 2s linear infinite;
+			animation: progress-bar-stripes 2s linear infinite;
+			box-shadow: inset 0 -1px 0 rgba(0,0,0,0.15);
+			box-sizing: border-box;
+			-webkit-transition: width .6s ease;
+			transition: width .6s ease;
+			background-color: #149bdf;
+			background-image: -webkit-gradient(linear,0 100%,100% 0,color-stop(0.25,rgba(255,255,255,0.15)),color-stop(0.25,transparent),color-stop(0.5,transparent),color-stop(0.5,rgba(255,255,255,0.15)),color-stop(0.75,rgba(255,255,255,0.15)),color-stop(0.75,transparent),to(transparent));
+			background-image: linear-gradient(45deg,rgba(255,255,255,0.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,0.15) 50%,rgba(255,255,255,0.15) 75%,transparent 75%,transparent);
+			-webkit-background-size: 40px 40px;
+			background-size: 40px 40px;
+			text-shadow:none;
+			border-top-left-radius: 4px;
+			border-bottom-left-radius: 4px;
+		}
+		#progressNum{
+			float: left;
+			text-align: left;
+			font-size: 12px;
+			color: #FFF;
+		}
 	</style>
 </head>
 <body>
 	<div class="preview">
 		<div class="content" id="previewPic">
-			<img src="./ajax-loader.gif" width="16" height="16" alt="loading...">
+			<img id="pic">
+			<div class="progress" id="progress">
+				<div class="bar" style="width:0%" id="progressBar">0%</div>
+			</div>
 		</div>
 	</div>
 	<script>
 	// <![CDATA[
 		(function(){
+			function $(id){
+				return document.getElementById(id);
+			}
+			var xhr;
+			function base64Encode(inputStr) 
+            {
+               var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+               var outputStr = "";
+               var i = 0;
+               
+               while (i < inputStr.length)
+               {
+                   //all three "& 0xff" added below are there to fix a known bug 
+                   //with bytes returned by xhr.responseText
+                   var byte1 = inputStr.charCodeAt(i++) & 0xff;
+                   var byte2 = inputStr.charCodeAt(i++) & 0xff;
+                   var byte3 = inputStr.charCodeAt(i++) & 0xff;
+            
+                   var enc1 = byte1 >> 2;
+                   var enc2 = ((byte1 & 3) << 4) | (byte2 >> 4);
+                   
+                   var enc3, enc4;
+                   if (isNaN(byte2))
+                   {
+                       enc3 = enc4 = 64;
+                   }
+                   else
+                   {
+                       enc3 = ((byte2 & 15) << 2) | (byte3 >> 6);
+                       if (isNaN(byte3))
+                       {
+                           enc4 = 64;
+                       }
+                       else
+                       {
+                           enc4 = byte3 & 63;
+                       }
+                   }
+            
+                   outputStr += b64.charAt(enc1) + b64.charAt(enc2) + b64.charAt(enc3) + b64.charAt(enc4);
+                } 
+               
+                return outputStr;
+            }
 			function initPreview(){
-				var index,src,el,Img;
+				var index,src,el,progressBar,progress,pic;
 				index = document.location.search.indexOf('=')+1;
 				src   = document.location.search.substring(index);
-				el 	  = document.getElementById('previewPic');
-				Img   = new Image();
-				Img.src = src;
-				Img.onload = function(){
-					Img.setAttribute("width",Img.width/2);   // retina display;
-					Img.setAttribute("height",Img.height/2);   // retina display;
-					el.innerHTML = "";
-					el.appendChild(Img);
-				};
-				Img.onerror = function(){
-					el.innerHTML = "loading error T_T!!";
-				};
+				el 	  = $('previewPic');
+				progressBar = $('progressBar');
+				progress = $('progress');
+				pic =  $('pic');
+
+				xhr = new XMLHttpRequest();
+
+				xhr.onloadstart = showProgressBar;
+				xhr.onprogress  = updateProgressBar;
+				xhr.onload = showImage;
+				xhr.onloadend = hideProgressBar;
+				xhr.onerror = loadError;
+				// xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
+				xhr.open("GET",src,true);
+				xhr.responseType = "blob";
+				xhr.send(null);
+
+				function updateProgressBar(e){
+					 if (e.lengthComputable){
+					 	var val = (Math.round(e.loaded * 10000 / e.total)/100).toString() + '%';
+					 	progressBar.style.width = val;
+					 	progressBar.innerHTML = val;
+					 }else{
+					 	progressBar.style.width = '100%';
+					 }
+				}
+				
+				function showProgressBar(){
+	               progress.style.display = "block";
+	            }
+
+	            function hideProgressBar(){
+	               progress.style.display = "none";
+	            }
+
+	            function showImage(e){
+	            	pic.src = URL.createObjectURL(xhr.response);
+	            	pic.style.display='block';
+	            }	
+
+	            function loadError(e){
+	            	el.innerHTML = "loading error T_T!!";
+	            }
 			}
 			window.onload = initPreview;
 		})();
