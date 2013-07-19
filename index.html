@@ -173,6 +173,8 @@
             }
 			function initPreview(){
 				var index,src,el,progressBar,progress,pic;
+				if(document.location.search==""){
+					return;
 				index = document.location.search.indexOf('=')+1;
 				src   = document.location.search.substring(index);
 				el 	  = $('previewPic');
