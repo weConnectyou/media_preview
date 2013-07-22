@@ -30,6 +30,7 @@
 		}
 		#pic{
 			display: none;
+			margin: 0 auto;
 		}
 		.preview{
 			display: table;
@@ -130,6 +131,46 @@
 			function $(id){
 				return document.getElementById(id);
 			}
+			function base64Encode(inputStr) 
+			            {
+			               var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+			               var outputStr = "";
+			               var i = 0;
+			               
+			               while (i < inputStr.length)
+			               {
+			                   //all three "& 0xff" added below are there to fix a known bug 
+			                   //with bytes returned by xhr.responseText
+			                   var byte1 = inputStr.charCodeAt(i++) & 0xff;
+			                   var byte2 = inputStr.charCodeAt(i++) & 0xff;
+			                   var byte3 = inputStr.charCodeAt(i++) & 0xff;
+			            
+			                   var enc1 = byte1 >> 2;
+			                   var enc2 = ((byte1 & 3) << 4) | (byte2 >> 4);
+			                   
+			                   var enc3, enc4;
+			                   if (isNaN(byte2))
+			                   {
+			                       enc3 = enc4 = 64;
+			                   }
+			                   else
+			                   {
+			                       enc3 = ((byte2 & 15) << 2) | (byte3 >> 6);
+			                       if (isNaN(byte3))
+			                       {
+			                           enc4 = 64;
+			                       }
+			                       else
+			                       {
+			                           enc4 = byte3 & 63;
+			                       }
+			                   }
+			            
+			                   outputStr += b64.charAt(enc1) + b64.charAt(enc2) + b64.charAt(enc3) + b64.charAt(enc4);
+			                } 
+			               
+			                return outputStr;
+			            }
 			var xhr;
 			function initPreview(){
 				var index,src,el,progressBar,progress,pic;
@@ -153,9 +194,13 @@
 				xhr.onload = showImage;
 				xhr.onloadend = hideProgressBar;
 				xhr.onerror = loadError;
-				// xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
+				if(xhr.overrideMimeType){
+					xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
+					
+				}else{
+					xhr.responseType = "blob";
+				}
 				xhr.open("GET",src,true);
-				xhr.responseType = "blob";
 				xhr.send(null);
 
 				function updateProgressBar(e){
@@ -174,11 +219,15 @@
 
 	            function hideProgressBar(){
 	               progress.style.display = "none";
-	               
 	            }
 
 	            function showImage(e){
-	            	pic.src = URL.createObjectURL(xhr.response);
+	            	if(window.URL){
+	            		pic.src = window.URL.createObjectURL(xhr.response);
+	            	}else{
+	            		pic.src = "data:image/jpeg;base64," + base64Encode(xhr.responseText);
+	            	}
+	            	
 	            	pic.style.display='block';
 	            }	
 
