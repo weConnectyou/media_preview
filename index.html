@@ -194,11 +194,10 @@
 				xhr.onload = showImage;
 				xhr.onloadend = hideProgressBar;
 				xhr.onerror = loadError;
-				if(xhr.overrideMimeType){
-					xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
-					
-				}else{
+				if(window.URL){
 					xhr.responseType = "blob";
+				}else{
+					xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
 				}
 				xhr.open("GET",src,true);
 				xhr.send(null);
