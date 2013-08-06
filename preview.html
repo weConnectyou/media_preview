@@ -186,21 +186,19 @@
 				index = document.location.search.indexOf('=')+1;
 				src   = document.location.search.substring(index);
 			
-
 				xhr = new XMLHttpRequest();
-
+				xhr.open("GET",src,true);
+				if(window.URL){
+					xhr.responseType = "blob";
+				}else{
+					xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
+				}
 				xhr.onloadstart = showProgressBar;
 				xhr.onprogress  = updateProgressBar;
 				xhr.onload = showImage;
 				xhr.onloadend = hideProgressBar;
 				xhr.onerror = loadError;
-				if(xhr.overrideMimeType){
-					xhr.overrideMimeType('text/plain; charset=x-user-defined'); 
-					
-				}else{
-					xhr.responseType = "blob";
-				}
-				xhr.open("GET",src,true);
+				
 				xhr.send(null);
 
 				function updateProgressBar(e){
@@ -227,7 +225,9 @@
 	            	}else{
 	            		pic.src = "data:image/jpeg;base64," + base64Encode(xhr.responseText);
 	            	}
-	            	
+	            	pic.onload = function(e) {
+	            	    window.URL.revokeObjectURL(pic.src); // Clean up after yourself.
+	            	};
 	            	pic.style.display='block';
 	            }	
 
